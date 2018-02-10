@@ -173,7 +173,7 @@ def create_dataset(target, features):
         #feature_single = []
         feature = features[i]
         data = []
-        data.append(i+1)
+        #data.append(i+1)
         for j in range(0, len(feature)):
             f = feature[j]
             data.append(f)
