@@ -58,9 +58,9 @@ def build_filters():
             for lambd in lambds:
                 params = {'ksize':(ksize, ksize), 'sigma':1.0, 'theta':theta, 'lambd':lambd,
                           'gamma':0.02, 'psi':0, 'ktype':cv2.CV_32F}
-                # kern = cv2.getGaborKernel(**params)
-                # kern /= 1.5*kern.sum()
-                # filters.append((kern, params))
+                kern = cv2.getGaborKernel(**params)
+                kern /= 1.5*kern.sum()
+                filters.append((kern, params))
     return filters
 
 
@@ -109,12 +109,12 @@ def feature_vector(patch):
             std_hsv.append((np.std(patch_hsv[:, :, i])))
             mean.append(np.mean(patch[:, :, i]))
             std.append((np.std(patch[:, :, i])))
-        #filters = build_filters()
-        #patch = cv2.cvtColor(patch, cv2.COLOR_BGR2GRAY)
-        #p = process(patch, filters)
-        #p = np.array(p)
-        #p = p.reshape(1,-1).tolist()
-        features = np.append(mean_hsv, np.append(std_hsv, np.append(mean, std)))
+        filters = build_filters()
+        patch = cv2.cvtColor(patch, cv2.COLOR_BGR2GRAY)
+        p = process(patch, filters)
+        p = np.array(p)
+        p = p.reshape(1,-1).tolist()
+        features = np.append(mean_hsv, np.append(std_hsv, np.append(mean, np.append(std, p))))
         features.reshape(1,-1)
         return features
     else:
@@ -168,12 +168,12 @@ def create_dataset(target, features):
     for i in range(0, len(features)):
         if i%500 == 0:
             print('i', i)
-        if i ==100000:
-            break
         #feature_single = []
         feature = features[i]
         data = []
         #data.append(i+1)
+        if len(feature) != 76:
+            continue
         for j in range(0, len(feature)):
             f = feature[j]
             data.append(f)
@@ -183,7 +183,7 @@ def create_dataset(target, features):
         dataset_list.append({index: data})
     #print((dataset_list[0].values()[0]))
     print((dataset_list[1]))
-
+    print("count", len(dataset_list))
     with open('dataset.csv', 'w') as fie:
         w = csv.writer(fie)
         for somedict in dataset_list:
