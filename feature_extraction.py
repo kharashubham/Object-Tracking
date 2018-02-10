@@ -6,6 +6,7 @@ from random import *
 dest = 'Dataset/nonrigid_datasets/'
 activities_img = ['skiing']
 
+randBinList = lambda n: [randint(0,1) for b in range(1,n+1)]
 
 def get_next_frame(frame_count):
     ok = False
@@ -57,9 +58,9 @@ def build_filters():
             for lambd in lambds:
                 params = {'ksize':(ksize, ksize), 'sigma':1.0, 'theta':theta, 'lambd':lambd,
                           'gamma':0.02, 'psi':0, 'ktype':cv2.CV_32F}
-                kern = cv2.getGaborKernel(**params)
-                kern /= 1.5*kern.sum()
-                filters.append((kern, params))
+                # kern = cv2.getGaborKernel(**params)
+                # kern /= 1.5*kern.sum()
+                # filters.append((kern, params))
     return filters
 
 
@@ -108,52 +109,16 @@ def feature_vector(patch):
             std_hsv.append((np.std(patch_hsv[:, :, i])))
             mean.append(np.mean(patch[:, :, i]))
             std.append((np.std(patch[:, :, i])))
-        filters = build_filters()
-        patch = cv2.cvtColor(patch, cv2.COLOR_BGR2GRAY)
-        p = process(patch, filters)
-        p = np.array(p)
-        p = p.reshape(1,-1).tolist()
-        features = np.append(mean_hsv, np.append(std_hsv, np.append(mean, np.append(std, p))))
+        #filters = build_filters()
+        #patch = cv2.cvtColor(patch, cv2.COLOR_BGR2GRAY)
+        #p = process(patch, filters)
+        #p = np.array(p)
+        #p = p.reshape(1,-1).tolist()
+        features = np.append(mean_hsv, np.append(std_hsv, np.append(mean, std)))
         features.reshape(1,-1)
         return features
     else:
         return None
-
-
-def normalize_histogram(histo):
-
-    sum = 0
-    n = histo.n
-    hist = histo.histo
-    '''compute sum of all bins and multiply each bin by the sum's inverse'''
-    for i in range(0, n):
-        sum += hist[i]
-        inv_sum = 1.0 / sum
-        for i in range(0, n):
-            hist[i] *= inv_sum
-
-
-def histo_dist_sq(h1, h2):
-    hist1 = h1
-    hist2 = h2
-
-    sum = float(np.sqrt(len(hist1) * len(hist2)))
-
-    return float(1.0 - sum)
-
-
-def likelihood(img, r, c, w, h, ref_histo):
-
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    histo = cv2.calcHist([hsv], [0, 1], None, [180, 256], [0, 180, 0, 256])
-
-    #normalize_histogram(histo)
-    d_sq = histo_dist_sq(histo, ref_histo)
-
-    return float(np.power(np.e, -d_sq/10e77))
-
-
-randBinList = lambda n: [randint(0,1) for b in range(1,n+1)]
 
 
 def get_dataset():
@@ -205,22 +170,22 @@ def create_dataset(target, features):
             print('i', i)
         if i ==100000:
             break
-        feature_single = []
+        #feature_single = []
         feature = features[i]
-        data = {}
+        data = []
+        data.append(i+1)
         for j in range(0, len(feature)):
             f = feature[j]
-            index = str.format('f%s' % j)
-            data[index] = f
-        data['target'] = target[i]
-        feature_single.append(data)
+            data.append(f)
+        data.append(target[i])
+        #feature_single.append(data)
         index = str.format('patch %s' % i)
-        dataset_list.append({index: feature_single})
-    print(type(dataset_list))
+        dataset_list.append({index: data})
+    #print((dataset_list[0].values()[0]))
+    print((dataset_list[1]))
 
     with open('dataset.csv', 'w') as fie:
         w = csv.writer(fie)
-        w.writerows(dataset_list[0].keys())
         for somedict in dataset_list:
             w.writerows(somedict.values())
 
