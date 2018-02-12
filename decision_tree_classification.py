@@ -34,8 +34,8 @@ def classify():
             GBTrErr.append(mean_squared_error(y_train, est.predict(X_train)))
             GBVaErr.append(mean_squared_error(y_test, est.predict(X_test)))
 
-    #plt.plot(iterators, GBTrErr)
-    plt.plot(iterators, GBVaErr)
+    plt.plot(iterators, GBTrErr)
+    #plt.plot(iterators, GBVaErr)
     plt.show()
 
 def get_score():

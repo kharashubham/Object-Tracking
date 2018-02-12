@@ -184,8 +184,15 @@ def create_dataset(target, features):
     #print((dataset_list[0].values()[0]))
     print((dataset_list[1]))
     print("count", len(dataset_list))
+    sttr = 'f1'
+    for i in range(2, 77):
+        stto = str.format(',f%s' % i)
+        sttr = sttr + stto
+    sttr = sttr + ',target'    
     with open('dataset.csv', 'w') as fie:
         w = csv.writer(fie)
+        fie.write(sttr)
+        fie.write('\n')
         for somedict in dataset_list:
             w.writerows(somedict.values())
 
